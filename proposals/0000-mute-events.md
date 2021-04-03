@@ -1,35 +1,40 @@
 # MSC0000: VoIP mute events
 
-During VoIP calls it is a common thing for a user to mute their microphone or
-webcam for a short period of time. This is usually done by disabling the
-corresponding tracks. The problem is that there is no way for the opponent to
-know that the person on the other side has muted their microphone. The opponent
-may wish to know this simply to show that the a participant is muted. Also, if
-the user mutes their camera, the opponent just sees a black screen, but the
-opponent client may wish to show their avatar instead.
+During VoIP calls it is common for a user to mute their microphone or webcam for
+a short period. This is usually done by disabling the corresponding tracks. The
+problem is that there is no way to know what is the muted state on the
+opponent's side.
+
+It is important that this is possible because of the following reasons:
+
++ Clients may wish to inform the user of the opponent's mute state.
++ If a user mutes their camera, their opponent just sees a black screen, but the
+  opponent's client may wish to show a placeholder instead (e.g. avatar, display
+  name).
 
 ## Proposal
 
 This MSC proposes adding a new call event `m.call.mute` which has the common
 VoIP fields as specified in
 [MSC2746](https://github.com/matrix-org/matrix-doc/pull/2746) (`version`,
-`call_id`, `party_id`) and `mute_info` object which contains the following
+`call_id`, `party_id`) and a `mute_info` object which contains the following
 fields:
 
-+ `stream_id`
++ `stream_id` - the `id` of the stream about which this event informs
 + `audio_muted`
 + `video_muted`
 
-A client sends this event when the users changes their mute state (i.e. mutes or
-unmutes their microphone or camera).
+### Rules
 
-Clients should persist this information even in the event of a stream
++ A client sends this event when the users changes their mute state (i.e. mutes or
+unmutes their microphone or camera).
++ Clients should persist this information even in the event of a stream
 replacement as defined in
 [MSC3077](https://github.com/matrix-org/matrix-doc/pull/3077).
-
-Clients should assume that any new stream has both audio and video enabled.
-
-TODO: These two points are a little contradictory.
++ When deciding how to display the current mute state clients should give priority
+  to missing tracks - if there is no video track the client should act as if the
+  video was muted.
++ Clients should assume that any new stream has all tracks enabled.
 
 ### Example
 
@@ -52,8 +57,8 @@ TODO: These two points are a little contradictory.
 
 ## Alternatives
 
-Clients could remove the audio/video track temporarily. This would theoretically
-work but would require a lot renegotiation which would make inefficient.
+Clients could remove the audio or video track temporarily. This would work but
+would require a lot renegotiation which wouldn't be very efficient.
 
 ## Potential issues
 
